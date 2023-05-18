@@ -4,6 +4,14 @@
 {% block content %}
     <h1>Tasks</h1>
 
-    <h2>Bienvenido {{name}}</h2>
+    <lu>
+        {% for task in tasks%}
+        <li>
+            <h2>{{task.title}}</h2>
+            <p>{{task.description}}</p>
+            <h3>{{task.user}}</h3>
+        </li>
+        {% endfor %}
+    </lu>
 
 {% endblock %}

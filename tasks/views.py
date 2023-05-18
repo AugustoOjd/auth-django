@@ -7,6 +7,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 # error en base de datos
 from django.db import IntegrityError
+# modelo de formulario basado en objecto/class
+from .forms import TaskForm
+
+from .models import Task
 
 # Create your views here.
 
@@ -42,9 +46,31 @@ def signup(request):
             })
 
 
-def tasks(request):
-    return render(request, 'tasks.html')
+def tasks(request ):
+    tasks = Task.objects.filter(user=request.user)
+    return render(request, 'tasks.html', {
+        'tasks': tasks
+    })
 
+def create_task(request):
+    if request.method == 'GET':
+        return render(request, 'create_task.html', {
+            'form': TaskForm
+        })
+    else:
+        try:
+            # print(request.POST)
+            form = TaskForm(request.POST)
+            new_task = form.save(commit=False)
+            new_task.user = request.user
+            new_task.save()
+            # print(new_task)
+            return redirect('tasks')
+        except:
+            return render(request, 'create_task.html', {
+            'form': TaskForm,
+            'error': 'Error invalid data'
+            })
 
 def signout(request):
     logout(request)
