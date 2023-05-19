@@ -5,6 +5,8 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 # sent cookie session navegador
 from django.contrib.auth import login, logout, authenticate
+# validador de login
+from django.contrib.auth.decorators import login_required
 # error en base de datos
 from django.db import IntegrityError
 # modelo de formulario basado en objecto/class
@@ -47,12 +49,14 @@ def signup(request):
             })
 
 
+@login_required
 def tasks(request ):
     tasks = Task.objects.filter(user=request.user)
     return render(request, 'tasks.html', {
         'tasks': tasks
     })
 
+@login_required
 def create_task(request):
     if request.method == 'GET':
         return render(request, 'create_task.html', {
@@ -73,6 +77,7 @@ def create_task(request):
             'error': 'Error invalid data'
             })
 
+@login_required
 def task_detail(request, id):
     if request.method == 'GET':
         # task = list(Task.objects.filter(id=id))
@@ -96,13 +101,23 @@ def task_detail(request, id):
             })
         
 
+@login_required
 def complete_task(request, id):
     task = get_object_or_404(Task, pk=id, user=request.user)
     if request.method == 'POST':
         task.datecompleted = timezone.now()
         task.save()
-        return('tasks')
+        return redirect('tasks')
 
+@login_required
+def delete_task(request, id):
+    task = get_object_or_404(Task, pk=id, user=request.user)
+    if request.method == 'POST':
+        task.datecompleted = timezone.now()
+        task.delete()
+        return redirect('tasks')
+
+@login_required
 def signout(request):
     logout(request)
     return redirect('home')
