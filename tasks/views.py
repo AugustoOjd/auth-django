@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 # usa base de datos pre cargada sqlite3
@@ -14,6 +14,7 @@ from .models import Task
 
 # Create your views here.
 
+from django.utils import timezone
 
 def home(request):
     return render(request, 'home.html')
@@ -71,6 +72,36 @@ def create_task(request):
             'form': TaskForm,
             'error': 'Error invalid data'
             })
+
+def task_detail(request, id):
+    if request.method == 'GET':
+        # task = list(Task.objects.filter(id=id))
+        task = get_object_or_404(Task, pk=id, user=request.user)
+        form = TaskForm(instance=task)
+        return render(request, 'task_detail.html', {
+            'task': task,
+            'form': form
+        })
+    else:
+        try:
+            task = get_object_or_404(Task, pk=id, user=request.user)
+            form = TaskForm(request.POST, instance=task)
+            form.save()
+            return redirect('tasks')
+        except:
+            return render(request, 'task_detail.html', {
+            'task': task,
+            'form': form,
+            'error': 'error en actualizar'
+            })
+        
+
+def complete_task(request, id):
+    task = get_object_or_404(Task, pk=id, user=request.user)
+    if request.method == 'POST':
+        task.datecompleted = timezone.now()
+        task.save()
+        return('tasks')
 
 def signout(request):
     logout(request)
